@@ -1,71 +1,52 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import { signToken, setAuthCookie } from '@/lib/auth';
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { signToken, setAuthCookie } from "@/lib/auth";
+import { corsResponse, errorResponse, handleCors } from "@/lib/api-helpers";
+
+export async function OPTIONS() {
+  return handleCors();
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { username, email, password } = body;
 
-    // Validation
     if (!username || !email || !password) {
-      return NextResponse.json(
-        { error: 'All fields are required' },
-        { status: 400 }
+      return errorResponse(
+        "All fields are required (username, email, password)",
+        400,
       );
     }
 
     if (username.length < 3) {
-      return NextResponse.json(
-        { error: 'Username must be at least 3 characters' },
-        { status: 400 }
-      );
+      return errorResponse("Username must be at least 3 characters", 400);
     }
 
     if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Password must be at least 6 characters' },
-        { status: 400 }
-      );
+      return errorResponse("Password must be at least 6 characters", 400);
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email address' },
-        { status: 400 }
-      );
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return errorResponse("Invalid email address", 400);
     }
 
-    // Check existing user
     const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }],
-      },
+      where: { OR: [{ email }, { username }] },
     });
 
     if (existingUser) {
-      const field = existingUser.email === email ? 'email' : 'username';
-      return NextResponse.json(
-        { error: `A user with that ${field} already exists` },
-        { status: 409 }
-      );
+      const field = existingUser.email === email ? "email" : "username";
+      return errorResponse(`A user with that ${field} already exists`, 409);
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
     const user = await prisma.user.create({
-      data: {
-        username,
-        email,
-        password: hashedPassword,
-      },
+      data: { username, email, password: hashedPassword },
     });
 
-    // Sign JWT
     const token = await signToken({
       userId: user.id,
       username: user.username,
@@ -73,10 +54,12 @@ export async function POST(request: NextRequest) {
       avatar: user.avatar,
     });
 
-    // Set cookie
+    // Set cookie for web clients
     await setAuthCookie(token);
 
-    return NextResponse.json({
+    // Return user + token so launcher/game can store it
+    return corsResponse({
+      ok: true,
       user: {
         id: user.id,
         username: user.username,
@@ -84,12 +67,10 @@ export async function POST(request: NextRequest) {
         avatar: user.avatar,
         createdAt: user.createdAt,
       },
+      token, // <-- launcher stores this, sends as `Authorization: Bearer <token>`
     });
-  } catch (error) {
-    console.error('Register error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("Register error:", err);
+    return errorResponse("Internal server error. Check server logs.", 500);
   }
 }

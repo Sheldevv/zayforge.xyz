@@ -1,23 +1,32 @@
-import { NextResponse } from 'next/server';
-import { getLauncherRelease, getGameRelease } from '@/lib/github';
+import { NextResponse } from "next/server";
+import { getLauncherRelease, getGameRelease } from "@/lib/github";
+import { corsHeaders, handleCors } from "@/lib/api-helpers";
+
+export async function OPTIONS() {
+  return handleCors();
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type') || 'all';
+  const type = searchParams.get("type") || "all";
 
   const results: Record<string, unknown> = {};
 
-  if (type === 'all' || type === 'launcher') {
+  if (type === "all" || type === "launcher") {
     results.launcher = await getLauncherRelease();
   }
 
-  if (type === 'all' || type === 'game') {
+  if (type === "all" || type === "game") {
     results.game = await getGameRelease();
   }
 
-  return NextResponse.json(results, {
-    headers: {
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+  return NextResponse.json(
+    { ok: true, ...results },
+    {
+      headers: {
+        ...corsHeaders(),
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
     },
-  });
+  );
 }

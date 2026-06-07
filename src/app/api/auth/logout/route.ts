@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
-import { removeAuthCookie } from '@/lib/auth';
+import { removeAuthCookie } from "@/lib/auth";
+import { corsResponse, handleCors } from "@/lib/api-helpers";
+
+export async function OPTIONS() {
+  return handleCors();
+}
 
 export async function POST() {
   await removeAuthCookie();
-  return NextResponse.json({ success: true });
+  return corsResponse({ ok: true, success: true });
 }

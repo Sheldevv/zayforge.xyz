@@ -1,7 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcryptjs';
-import { signToken, setAuthCookie } from '@/lib/auth';
+import { NextRequest } from "next/server";
+import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
+import { signToken, setAuthCookie } from "@/lib/auth";
+import { corsResponse, errorResponse, handleCors } from "@/lib/api-helpers";
+
+export async function OPTIONS() {
+  return handleCors();
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,34 +14,20 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+      return errorResponse("Email and password are required", 400);
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
+    const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
+      return errorResponse("Invalid email or password", 401);
     }
 
-    // Verify password
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      );
+      return errorResponse("Invalid email or password", 401);
     }
 
-    // Sign JWT
     const token = await signToken({
       userId: user.id,
       username: user.username,
@@ -44,10 +35,12 @@ export async function POST(request: NextRequest) {
       avatar: user.avatar,
     });
 
-    // Set cookie
+    // Set cookie for web clients
     await setAuthCookie(token);
 
-    return NextResponse.json({
+    // Return user + token so launcher/game can store it
+    return corsResponse({
+      ok: true,
       user: {
         id: user.id,
         username: user.username,
@@ -55,12 +48,10 @@ export async function POST(request: NextRequest) {
         avatar: user.avatar,
         createdAt: user.createdAt,
       },
+      token, // <-- launcher stores this
     });
-  } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch (err) {
+    console.error("Login error:", err);
+    return errorResponse("Internal server error. Check server logs.", 500);
   }
 }
