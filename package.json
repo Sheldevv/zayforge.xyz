@@ -4,12 +4,14 @@
   "description": "ZayForge Official Website — A 2D top-down survival/RPG game inspired by Minecraft",
   "private": true,
   "scripts": {
-    "dev": "prisma db push && next dev",
-    "build": "prisma db push && next build",
+    "dev": "next dev",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate && prisma db push",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma db push && next build",
     "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev --name init",
     "db:studio": "prisma studio"
   },
   "dependencies": {

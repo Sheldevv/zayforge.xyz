@@ -1,11 +1,12 @@
-// This is your Prisma schema file.
+// ZayForge — Prisma Schema (PostgreSQL)
+// Works with: Vercel Postgres, Neon, Supabase, Railway, or any PostgreSQL
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -28,7 +29,7 @@ model GameSave {
   name      String   @default("Save")
   data      String   // JSON blob of game state
   version   String   @default("1.0")
-  playTime  Int      @default(0)  // seconds
+  playTime  Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
