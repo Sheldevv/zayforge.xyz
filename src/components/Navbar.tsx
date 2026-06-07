@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
 interface User {
   username: string;
@@ -16,7 +16,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch("/api/auth/me")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => setUser(data?.user || null))
       .catch(() => setUser(null))
@@ -24,15 +24,13 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   const isActive = (path: string) =>
-    pathname === path
-      ? 'text-forge-400'
-      : 'text-iron-300 hover:text-forge-400';
+    pathname === path ? "text-forge-400" : "text-iron-300 hover:text-forge-400";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-iron-950/80 backdrop-blur-md border-b border-iron-800">
@@ -48,11 +46,20 @@ export default function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
-            <Link href="/" className={`${isActive('/')} transition-colors`}>
+            <Link href="/" className={`${isActive("/")} transition-colors`}>
               Home
             </Link>
-            <Link href="/download" className={`${isActive('/download')} transition-colors`}>
+            <Link
+              href="/download"
+              className={`${isActive("/download")} transition-colors`}
+            >
               Download
+            </Link>
+            <Link
+              href="/docs"
+              className={`${isActive("/docs")} transition-colors`}
+            >
+              API Docs
             </Link>
 
             {loading ? (
@@ -61,7 +68,7 @@ export default function Navbar() {
               <div className="flex items-center gap-4">
                 <Link
                   href="/account"
-                  className={`${isActive('/account')} flex items-center gap-2 transition-colors`}
+                  className={`${isActive("/account")} flex items-center gap-2 transition-colors`}
                 >
                   <div className="w-7 h-7 rounded-full bg-forge-700 flex items-center justify-center text-sm font-bold text-white">
                     {user.username.charAt(0).toUpperCase()}
@@ -98,11 +105,26 @@ export default function Navbar() {
             className="md:hidden text-iron-300 hover:text-white"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               )}
             </svg>
           </button>
@@ -113,23 +135,30 @@ export default function Navbar() {
           <div className="md:hidden pb-4 space-y-3">
             <Link
               href="/"
-              className={`block py-2 ${isActive('/')}`}
+              className={`block py-2 ${isActive("/")}`}
               onClick={() => setMobileOpen(false)}
             >
               Home
             </Link>
             <Link
               href="/download"
-              className={`block py-2 ${isActive('/download')}`}
+              className={`block py-2 ${isActive("/download")}`}
               onClick={() => setMobileOpen(false)}
             >
               Download
+            </Link>
+            <Link
+              href="/docs"
+              className={`block py-2 ${isActive("/docs")}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              API Docs
             </Link>
             {user ? (
               <>
                 <Link
                   href="/account"
-                  className={`block py-2 ${isActive('/account')}`}
+                  className={`block py-2 ${isActive("/account")}`}
                   onClick={() => setMobileOpen(false)}
                 >
                   Account — {user.username}
