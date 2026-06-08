@@ -33,9 +33,21 @@
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.0"
   },
+  "homepage": "https://zayforge.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sheldevv/ZayForge"
+  },
   "keywords": [
     "zayforge",
     "game",
+    "survival",
+    "rpg",
+    "2d",
+    "minecraft",
+    "indie",
+    "love2d",
+    "lua",
     "website"
   ],
   "author": "Sheldi Pierre",
