@@ -92,8 +92,8 @@ async function fetchRelease(
   }
 }
 
-/** Launcher release pinned to v1.1 — change this to bump the promoted version. */
-const LAUNCHER_TAG = "v1.1";
+/** Launcher release pinned to v1.2 — change this to bump the promoted version. */
+const LAUNCHER_TAG = "v1.2";
 
 export async function getLauncherRelease(): Promise<ReleaseInfo | null> {
   return fetchRelease("Sheldevv", "ZayForge-Launcher", LAUNCHER_TAG);
